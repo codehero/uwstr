@@ -1,0 +1,121 @@
+3 Levels of conformity
+
+Level 0: 7-bit ASCII (no multibyte characters)
+Level 1: Complete UTF-8 (multibyte characters)
+Level 2: Adds UTF-16 and UTF-32 support.
+
+
+Invalid UTF-8 (and ASCII) characters
+0xC0
+0xC1
+
+0xF5
+0xF6
+0xF7
+
+0xF8
+0xF9
+0xFA
+0xFB
+0xFC
+0xFD
+0xFE
+0xFF
+
+Level 0:
+------------------------------------------------------
+
+UTF-8
+
+Follow the [invalid char, null termination] scheme,
+Limit invalid char to 0xF_ range
+
+Storage schemes:
+-Must have 4 byte alignment
+-Indication of endiannes
+
+Possibilities:
+-Single byte capacity and length
+-2 byte capacity and length
+ -Requires endianess marker
+
+0xF5 -> Single byte
+0xF6 -> 2 byte, little endian
+0xF7 -> 2 byte, big endian
+
+
+0xF5 0x00 0xYY 0xZZ
+
+YY -> NULL terminator offset
+ZZ -> capacity
+
+if(YY >= ZZ), then the string is the invalidated string
+
+0xF6 0x00 0xYYYY ... 0x0000 0xZZZZ
+
+YYYY -> NULL terminator offset
+ZZZZ -> capacity
+
+Location of ZZZZ is following 4 byte aligned address from null terminator
+
+
+
+
+
+Level 1:
+------------------------------------------------------
+The strings may now contain multi-byte characters.
+Now number of characters != number of bytes.
+Maintain counts of each kind of character (1,2,3,4)
+
+
+
+
+
+Level 2:
+------------------------------------------------------
+
+The assumptions for UTF-16 and UTF-32 are that you leave the embedded system
+arena for systems with gobs of memory.
+
+Thus no effort is made to really streamline.
+
+
+UTF-16
+
+Follow the [invalid char, null termination] scheme,
+For an invalid char, we choose a single surrogate pair character
+0xD800 -> 0xDFFF
+
+We do not want to have a value 2-byte UTF-8 character though, so what must
+follow the first character must not be a 10XXXXXXb character.
+
+[11011AAAb 0x11BBBBBB, 0x00 0x00]
+
+or
+
+[11011AAAb 0x00BBBBBB, 0x00 0x00]
+
+or
+
+[11011AAAb 0x01BBBBBB, 0x00 0x00]
+
+
+
+
+UTF-32
+
+Follow the [invalid char, null termination] scheme,
+The invalid char must be > 0x10FFFF, the highest available code point in Unicode
+
+The invalid char breaks down into this sequence
+-a single byte prefix 0xC1
+-a free bytes
+-a byte with the MSB set
+-another free byte
+
+So the header layout is:
+
+[0xC1 0xMM 1NNNNNNN 0xPPPPPPPP, 0x00 0x00 0x00 0x00]
+
+
