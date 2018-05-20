@@ -17,8 +17,6 @@
  * -Invalidated string: A string result that does not contain valid data
  * */
 
-WSTR(s_test, "test");
-
 /* Initialization. */
 
 
