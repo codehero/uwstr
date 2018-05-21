@@ -49,5 +49,20 @@ int main(int argc, const char* argv[]){
 	assert(0 == uws_cmp(large_buff, small_buff));
 	assert(0 == uws_cmp(small_buff, large_buff));
 
+	/* Concatenate again */
+	len = uws_ccat(small_buff, SMALL_TEST);
+	assert(len == 2 * (sizeof(SMALL_TEST) - 1));
+	assert(uws_avail(small_buff) == SMALL - 2 * (sizeof(SMALL_TEST) - 1));
+
+	len = uws_ccat(large_buff, SMALL_TEST);
+	assert(uws_avail(large_buff) == LARGE - 2 * (sizeof(SMALL_TEST) - 1));
+
+	assert(0 == uws_cmp(large_buff, small_buff));
+	assert(0 == uws_cmp(small_buff, large_buff));
+
+	/* Over stuff the small. */
+	len = uws_ccat(small_buff, SMALL_TEST);
+	assert(uws_invalid(small_buff));
+
 	return 0;
 }
