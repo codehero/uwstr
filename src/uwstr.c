@@ -78,17 +78,18 @@ void uws_init(char* buffer, size_t bufflen){
 	d->hdr = DOUBLE_BYTE;
 	d->nullterm = '\0';
 	d->length = 0;
-	d->capacity = bufflen - sizeof(struct double_str);
+	d->capacity = bufflen - sizeof(struct double_str) - 1;
 	d->reserved = 0;
 
 	d->data[0] = '\0';
 }
 
 void uws_empty(char* buffer){
-	assert(buffer[0] >= 0xF5 && buffer[0] <= 0xF6);
-	assert(buffer[1] == 0);
+	uint8_t* b = (uint8_t*)buffer;
+	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[1] == 0);
 
-	if(buffer[0] == SINGLE_BYTE){
+	if(b[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)buffer;
 		s->length = 0;
 		s->data[0] = '\0';
@@ -101,10 +102,11 @@ void uws_empty(char* buffer){
 }
 
 bool uws_invalid(const char* buffer){
-	assert(buffer[0] >= 0xF5 && buffer[0] <= 0xF6);
+	uint8_t* b = (uint8_t*)buffer;
+	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(buffer[1] == 0);
 
-	if(buffer[0] == SINGLE_BYTE){
+	if(b[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)buffer;
 		if(s->length >= s->capacity)
 			return true;
@@ -119,13 +121,14 @@ bool uws_invalid(const char* buffer){
 }
 
 size_t uws_len(const char* uws){
-	assert(uws[0] >= 0xF5 && uws[0] <= 0xF6);
-	assert(uws[1] == 0);
+	uint8_t* b = (uint8_t*)uws;
+	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[1] == 0);
 
 	if(uws_invalid(uws))
 		return sizeof(INVALID_C_STRING) - 1;
 
-	if(uws[0] == SINGLE_BYTE){
+	if(b[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		return s->length;
 	}
@@ -140,10 +143,11 @@ size_t uws_cnt(const char* uws){
 }
 
 size_t uws_avail(const char* uws){
-	assert(uws[0] >= 0xF5 && uws[0] <= 0xF6);
+	uint8_t* b = (uint8_t*)uws;
+	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(uws[1] == 0);
 
-	if(uws[0] == SINGLE_BYTE){
+	if(b[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		return s->capacity - s->length;
 	}
@@ -154,6 +158,7 @@ size_t uws_avail(const char* uws){
 }
 
 size_t uws_cat(char* uws_dest, const char* uws_src){
+	uint8_t* ds = (uint8_t*)uws_dest;
 
 	if(uws_invalid(uws_src)){
 		uws_invalidate(uws_dest);
@@ -163,7 +168,7 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 	size_t src_len = uws_len(uws_src);
 	const char * src = uws_c(uws_src);
 
-	if(uws_dest[0] == SINGLE_BYTE){
+	if(ds[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws_dest;
 		if(s->length + src_len >= s->capacity){
 			s->length = s->capacity;
@@ -174,7 +179,7 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 		s->length += src_len;
 		s->data[s->length] = '\0';
 
-		return s->capacity - s->length;
+		return s->length;
 	}
 	else{
 		__auto_type d = (struct double_str*)uws_dest;
@@ -188,7 +193,7 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 		d->length += src_len;
 		d->data[d->length] = '\0';
 
-		return d->capacity - d->length;
+		return d->length;
 	}
 }
 
@@ -218,13 +223,14 @@ int uws_cmp(const char* uws_a, const char* uws_b){
 }
 
 const char* uws_c(const char* uws){
-	assert(uws[0] >= 0xF5 && uws[0] <= 0xF6);
-	assert(uws[1] == 0);
+	uint8_t* b = (uint8_t*)uws;
+	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[1] == 0);
 
 	if(uws_invalid(uws))
 		return INVALID_C_STRING;
 
-	if(uws[0] == SINGLE_BYTE){
+	if(b[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		return s->data;
 	}
@@ -235,9 +241,10 @@ const char* uws_c(const char* uws){
 }
 
 size_t uws_ccat(char* uws_dest, const char* src){
+	uint8_t* ds = (uint8_t*)uws_dest;
 	size_t src_len = strlen(src);
 
-	if(uws_dest[0] == SINGLE_BYTE){
+	if(ds[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws_dest;
 		if(s->length + src_len >= s->capacity){
 			s->length = s->capacity;
@@ -248,7 +255,7 @@ size_t uws_ccat(char* uws_dest, const char* src){
 		s->length += src_len;
 		s->data[s->length] = '\0';
 
-		return s->capacity - s->length;
+		return s->length;
 	}
 	else{
 		__auto_type d = (struct double_str*)uws_dest;
@@ -262,7 +269,7 @@ size_t uws_ccat(char* uws_dest, const char* src){
 		d->length += src_len;
 		d->data[d->length] = '\0';
 
-		return d->capacity - d->length;
+		return d->length;
 	}
 
 }
