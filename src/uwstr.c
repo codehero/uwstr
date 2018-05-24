@@ -32,7 +32,8 @@ struct double_str {
 
 
 static void uws_invalidate(char* uws){
-	if(uws[0] == SINGLE_BYTE){
+	uint8_t* b = (uint8_t*)uws;
+	if(b[0] == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		s->length = s->capacity;
 	}
