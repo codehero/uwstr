@@ -31,14 +31,17 @@ size_t uws_alloc_size(size_t capacity);
  *  @return uws string initialized to the empty string. */
 void uws_init(char* buffer, size_t bufflen);
 
-/** @brief Set a string to the empty string. */
+/** @brief Set a string to the empty string.
+ *  @param buffer Non-NULL pointer to character data. */
 void uws_empty(char* buffer);
 
 
 /* Properties. */
 
 
-/** @brief Whether uws string is invalid. */
+/** @brief Whether uws string is invalid.
+ *  @return true if NULL == buffer
+ *  or buffer does not contain a valid uws prefix.*/
 bool uws_invalid(const char* buffer);
 
 /** @brief Get length of a uws string.
@@ -62,6 +65,8 @@ size_t uws_avail(const char* uws);
 
 
 /** @brief Concatenate 2 uws strings.
+ *  @param uws_dest Non-NULL pointer to uws data
+ *  @param uws_src pointer to uws data
  *  @return Total length of new string. If there was not enough space in uws, then
  *  then uws_dest is the invalid string. */
 size_t uws_cat(char* uws_dest, const char* uws_src);

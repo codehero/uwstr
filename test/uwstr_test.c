@@ -96,5 +96,14 @@ int main(int argc, const char* argv[]){
 
 	assert(0 == uws_cmp(large_buff, small_buff));
 	assert(0 == uws_cmp(small_buff, large_buff));
+
+	uws_empty(small_buff);
+	uws_empty(large_buff);
+
+	uws_ccat(small_buff, NULL);
+	uws_ccat(large_buff, NULL);
+	assert(uws_invalid(small_buff) == true);
+	assert(uws_invalid(large_buff) == true);
+
 	return 0;
 }

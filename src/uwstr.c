@@ -104,6 +104,9 @@ void uws_empty(char* buffer){
 }
 
 bool uws_invalid(const char* buffer){
+	if(!buffer)
+		return true;
+
 	uint8_t* b = (uint8_t*)buffer;
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(buffer[1] == 0);
@@ -123,6 +126,9 @@ bool uws_invalid(const char* buffer){
 }
 
 size_t uws_len(const char* uws){
+	if(!uws)
+		return sizeof(INVALID_C_STRING) - 1;
+
 	uint8_t* b = (uint8_t*)uws;
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(b[1] == 0);
@@ -145,6 +151,9 @@ size_t uws_cnt(const char* uws){
 }
 
 size_t uws_avail(const char* uws){
+	if(!uws)
+		return 0;
+
 	uint8_t* b = (uint8_t*)uws;
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(uws[1] == 0);
@@ -227,6 +236,9 @@ int uws_cmp(const char* uws_a, const char* uws_b){
 }
 
 const char* uws_c(const char* uws){
+	if(!uws)
+		return INVALID_C_STRING;
+
 	uint8_t* b = (uint8_t*)uws;
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(b[1] == 0);
@@ -246,6 +258,11 @@ const char* uws_c(const char* uws){
 
 size_t uws_ccat(char* uws_dest, const char* src){
 	assert(uws_dest);
+
+	if(!src){
+		uws_invalidate(uws_dest);
+		return 0;
+	}
 
 	uint8_t* ds = (uint8_t*)uws_dest;
 	size_t src_len = strlen(src);
