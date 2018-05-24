@@ -87,6 +87,7 @@ void uws_init(char* buffer, size_t bufflen){
 
 void uws_empty(char* buffer){
 	uint8_t* b = (uint8_t*)buffer;
+	assert(b);
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(b[1] == 0);
 
@@ -159,6 +160,8 @@ size_t uws_avail(const char* uws){
 }
 
 size_t uws_cat(char* uws_dest, const char* uws_src){
+	assert(uws_dest);
+
 	uint8_t* ds = (uint8_t*)uws_dest;
 
 	if(uws_invalid(uws_src)){
@@ -242,6 +245,8 @@ const char* uws_c(const char* uws){
 }
 
 size_t uws_ccat(char* uws_dest, const char* src){
+	assert(uws_dest);
+
 	uint8_t* ds = (uint8_t*)uws_dest;
 	size_t src_len = strlen(src);
 
