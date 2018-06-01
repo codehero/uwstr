@@ -24,9 +24,9 @@ struct single_str {
 struct double_str {
 	uint8_t hdr;
 	uint8_t nullterm;
+	uint16_t reserved;
 	uint16_t length;
 	uint16_t capacity;
-	uint16_t reserved;
 	char data[];
 };
 
