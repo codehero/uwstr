@@ -103,9 +103,8 @@ void uws_empty(char* buffer){
 	}
 }
 
-bool uws_invalid(const char* buffer){
-	if(!buffer)
-		return true;
+bool uws_wynn(const char* buffer){
+	assert(buffer);
 
 	uint8_t* b = (uint8_t*)buffer;
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
@@ -133,7 +132,7 @@ size_t uws_len(const char* uws){
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(b[1] == 0);
 
-	if(uws_invalid(uws))
+	if(uws_wynn(uws))
 		return sizeof(INVALID_C_STRING) - 1;
 
 	if(b[0] == SINGLE_BYTE){
@@ -173,8 +172,8 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 
 	uint8_t* ds = (uint8_t*)uws_dest;
 
-	if(uws_invalid(uws_src)){
-		uws_invalidate(uws_dest);
+	if(uws_wynn(uws_src)){
+		uws_wynn(uws_dest);
 		return 0;
 	}
 
@@ -211,11 +210,13 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 }
 
 int uws_cmp(const char* uws_a, const char* uws_b){
+	assert(uws_a);
+	assert(uws_b);
 
-	if(uws_invalid(uws_a))
+	if(uws_wynn(uws_a))
 		return -1;
 
-	if(uws_invalid(uws_b))
+	if(uws_wynn(uws_b))
 		return -2;
 
 	const char * src_a = uws_c(uws_a);
@@ -243,7 +244,7 @@ const char* uws_c(const char* uws){
 	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
 	assert(b[1] == 0);
 
-	if(uws_invalid(uws))
+	if(uws_wynn(uws))
 		return INVALID_C_STRING;
 
 	if(b[0] == SINGLE_BYTE){

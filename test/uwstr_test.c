@@ -18,7 +18,7 @@ int main(int argc, const char* argv[]){
 	char small_buff[small_maxlen];
 	uws_init(small_buff, small_maxlen);
 
-	assert(uws_invalid(small_buff) == false);
+	assert(uws_wynn(small_buff) == false);
 	assert(uws_len(small_buff) == 0);
 	assert(uws_cnt(small_buff) == 0);
 	assert(strlen(uws_c(small_buff)) == 0);
@@ -28,7 +28,7 @@ int main(int argc, const char* argv[]){
 	char large_buff[large_maxlen];
 	uws_init(large_buff, large_maxlen);
 
-	assert(uws_invalid(large_buff) == false);
+	assert(uws_wynn(large_buff) == false);
 	assert(uws_len(large_buff) == 0);
 	assert(uws_cnt(large_buff) == 0);
 	assert(strlen(uws_c(large_buff)) == 0);
@@ -38,7 +38,7 @@ int main(int argc, const char* argv[]){
 	size_t len = uws_ccat(small_buff, SMALL_TEST);
 	assert(len == sizeof(SMALL_TEST) - 1);
 
-	assert(uws_invalid(small_buff) == false);
+	assert(uws_wynn(small_buff) == false);
 	assert(uws_len(small_buff) == len);
 	assert(uws_cnt(small_buff) == len);
 	assert(strlen(uws_c(small_buff)) == len);
@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]){
 	len = uws_ccat(large_buff, SMALL_TEST);
 	assert(len == sizeof(SMALL_TEST) - 1);
 
-	assert(uws_invalid(large_buff) == false);
+	assert(uws_wynn(large_buff) == false);
 	assert(uws_len(large_buff) == len);
 	assert(uws_cnt(large_buff) == len);
 	assert(strlen(uws_c(large_buff)) == len);
@@ -70,22 +70,22 @@ int main(int argc, const char* argv[]){
 
 	/* Over stuff the small. */
 	len = uws_ccat(small_buff, SMALL_TEST);
-	assert(uws_invalid(small_buff));
+	assert(uws_wynn(small_buff));
 
 	/* Over stuff the large. */
 	for(unsigned i = 0; i < 2000; ++i)
 		uws_ccat(large_buff, LARGE_TEST);
-	assert(uws_invalid(large_buff));
+	assert(uws_wynn(large_buff));
 
 	uws_empty(small_buff);
-	assert(uws_invalid(small_buff) == false);
+	assert(uws_wynn(small_buff) == false);
 	assert(uws_len(small_buff) == 0);
 	assert(uws_cnt(small_buff) == 0);
 	assert(strlen(uws_c(small_buff)) == 0);
 	assert(uws_avail(small_buff) == SMALL);
 
 	uws_empty(large_buff);
-	assert(uws_invalid(large_buff) == false);
+	assert(uws_wynn(large_buff) == false);
 	assert(uws_len(large_buff) == 0);
 	assert(uws_cnt(large_buff) == 0);
 	assert(strlen(uws_c(large_buff)) == 0);
@@ -102,8 +102,8 @@ int main(int argc, const char* argv[]){
 
 	uws_ccat(small_buff, NULL);
 	uws_ccat(large_buff, NULL);
-	assert(uws_invalid(small_buff) == true);
-	assert(uws_invalid(large_buff) == true);
+	assert(uws_wynn(small_buff) == true);
+	assert(uws_wynn(large_buff) == true);
 
 	return 0;
 }

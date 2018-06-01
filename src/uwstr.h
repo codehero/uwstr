@@ -39,17 +39,17 @@ void uws_empty(char* buffer);
 /* Properties. */
 
 
-/** @brief Whether uws string is invalid.
+/** @brief Whether uws string is a wynnstring.
  *  @return true if NULL == buffer
  *  or buffer does not contain a valid uws prefix.*/
-bool uws_invalid(const char* buffer);
+bool uws_wynn(const char* buffer);
 
 /** @brief Get length of a uws string.
  *  @param uws Must point to string initialized by uws_init
  *  @return Number of bytes in the string. Invalid strings will return 1. */
 size_t uws_len(const char* uws);
 
-/** @brief Number of characters in a uws string.
+/** @brief Number of code points in a uws string.
  *  @param uws Must point to string initialized by uws_init
  *  @return 0 Number of bytes in the string. Invalid strings will return 1. */
 size_t uws_cnt(const char* uws);
@@ -77,7 +77,7 @@ size_t uws_cat(char* uws_dest, const char* uws_src);
 
 /** @brief Compare 2 uws strings.
  *  @return follows strcmp semantics.
- *  If either a or b is undefined, the return value is undefined but never 0. */
+ *  If either a or b is wynnstring, the return value is < 0. */
 int uws_cmp(const char* uws_a, const char* uws_b);
 
 
