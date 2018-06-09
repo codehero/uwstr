@@ -8,36 +8,48 @@
 #error "No support above 0 so far!"
 #endif
 
-#define SINGLE_BYTE 0xF5
-#define DOUBLE_BYTE 0xF6
+/** @brief This bit indicates that the string resides in read only memory. */
+#define RO_BIT  0x01
 
-#define INVALID_C_STRING "\xFF"
+/** @brief This bit indicates that a partial inbuffer was made, but
+ * the UTF-8 encoding was not complete. A call to uws_c() will result
+ * in an invalid string. However, a subsequent buffer cat with the 
+ * remaining UTF-8 bytes can clear this bit. */
+#define GRAY_BIT  0x02
 
-struct single_str {
-	uint8_t hdr;
-	uint8_t nullterm;
-	uint8_t length;
-	uint8_t capacity;
-	char data[];
-};
+/** @brief This bit indicates that individual counts of each kind of
+ * multibyte are maintained.
+ * -Count of 1 byte encodings
+ * -Count of 2 byte encodings
+ * -Count of 3 byte encodings
+ * -Count of 4 byte encodings
+ * */
+#define UTF8_COUNT_BIT 0x40
 
-struct double_str {
-	uint8_t hdr;
-	uint8_t nullterm;
-	uint16_t reserved;
-	uint16_t length;
-	uint16_t capacity;
-	char data[];
-};
+/** @brief This indicates that the string uses 2 bytes for string length.
+ * Otherwise, if clear then only 1 byte is used. */
+#define DOUBLE_BIT 0x20
 
+
+#define SINGLE_BYTE 0xC0
+#define DOUBLE_BYTE 0xE0
+
+#define SIZE_MASK  0xE0
+
+/* A continuation byte by itself is invalid in UTF-8.
+ * wynnstr also expect both high bits to be set. */
+#define INVALID_C_STRING "\x80"
+
+#define single_str __internal_uws_single_str
+#define double_str __internal_uws_double_str
 
 static void uws_invalidate(char* uws){
 	uint8_t* b = (uint8_t*)uws;
-	if(b[0] == SINGLE_BYTE){
+	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		s->length = s->capacity;
 	}
-	else{
+	else if((b[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)uws;
 		d->length = d->capacity;
 	}
@@ -88,40 +100,53 @@ void uws_init(char* buffer, size_t bufflen){
 void uws_empty(char* buffer){
 	uint8_t* b = (uint8_t*)buffer;
 	assert(b);
-	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[0] >= 0xC0);
+	assert(!(b[0] & 1));
 	assert(b[1] == 0);
 
-	if(b[0] == SINGLE_BYTE){
+	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)buffer;
 		s->length = 0;
 		s->data[0] = '\0';
 	}
-	else{
+	else if((b[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)buffer;
 		d->length = 0;
 		d->data[0] = '\0';
 	}
+	else
+		assert(0);
 }
 
 bool uws_wynn(const char* buffer){
 	assert(buffer);
 
 	uint8_t* b = (uint8_t*)buffer;
-	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[0] >= 0xC0);
 	assert(buffer[1] == 0);
 
-	if(b[0] == SINGLE_BYTE){
+	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)buffer;
-		if(s->length >= s->capacity)
+		if(s->length < s->capacity)
 			return true;
 	}
-	else{
+	else if((b[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)buffer;
-		if(d->length >= d->capacity)
+		if(d->length < d->capacity)
 			return true;
 	}
 
 	return false;
+}
+
+bool uws_ro(const char* uws){
+	assert(buffer);
+
+	uint8_t* b = (uint8_t*)buffer;
+	assert(b[0] >= 0xC0);
+	assert(buffer[1] == 0);
+
+	return (b[0] & RO_BIT) ? true : false;
 }
 
 size_t uws_len(const char* uws){
@@ -129,20 +154,22 @@ size_t uws_len(const char* uws){
 		return sizeof(INVALID_C_STRING) - 1;
 
 	uint8_t* b = (uint8_t*)uws;
-	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[0] >= 0xC0);
 	assert(b[1] == 0);
 
-	if(uws_wynn(uws))
+	if(!uws_wynn(uws))
 		return sizeof(INVALID_C_STRING) - 1;
 
-	if(b[0] == SINGLE_BYTE){
+	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		return s->length;
 	}
-	else{
+	else if((b[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)uws;
 		return d->length;
 	}
+	else
+		return sizeof(INVALID_C_STRING) - 1;
 }
 
 size_t uws_cnt(const char* uws){
@@ -154,17 +181,19 @@ size_t uws_avail(const char* uws){
 		return 0;
 
 	uint8_t* b = (uint8_t*)uws;
-	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[0] >= 0xC0);
 	assert(uws[1] == 0);
 
-	if(b[0] == SINGLE_BYTE){
+	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		return s->capacity - s->length;
 	}
-	else{
+	else if((b[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)uws;
 		return d->capacity - d->length;
 	}
+	else
+		return 0;
 }
 
 size_t uws_cat(char* uws_dest, const char* uws_src){
@@ -172,15 +201,15 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 
 	uint8_t* ds = (uint8_t*)uws_dest;
 
-	if(uws_wynn(uws_src)){
-		uws_wynn(uws_dest);
+	if(!uws_wynn(uws_src)){
+		uws_invalidate(uws_dest);
 		return 0;
 	}
 
 	size_t src_len = uws_len(uws_src);
 	const char * src = uws_c(uws_src);
 
-	if(ds[0] == SINGLE_BYTE){
+	if((ds[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws_dest;
 		if(s->length + src_len >= s->capacity){
 			s->length = s->capacity;
@@ -193,7 +222,7 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 
 		return s->length;
 	}
-	else{
+	else if((ds[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)uws_dest;
 
 		if(d->length + src_len >= d->capacity){
@@ -207,16 +236,23 @@ size_t uws_cat(char* uws_dest, const char* uws_src){
 
 		return d->length;
 	}
+	else
+		return 0;
+}
+
+int uws_inbuffer(const char* uws_dest, const uint8_t* src, size_t src_len){
+	/* TODO */
+	return -3;
 }
 
 int uws_cmp(const char* uws_a, const char* uws_b){
 	assert(uws_a);
 	assert(uws_b);
 
-	if(uws_wynn(uws_a))
+	if(!uws_wynn(uws_a))
 		return -1;
 
-	if(uws_wynn(uws_b))
+	if(!uws_wynn(uws_b))
 		return -2;
 
 	const char * src_a = uws_c(uws_a);
@@ -236,25 +272,32 @@ int uws_cmp(const char* uws_a, const char* uws_b){
 	return ret;
 }
 
+size_t uws_tok(const char* uws_src, const char** pos, const char* delimiters){
+	/* TODO */
+	return 0;
+}
+
 const char* uws_c(const char* uws){
 	if(!uws)
 		return INVALID_C_STRING;
 
 	uint8_t* b = (uint8_t*)uws;
-	assert(b[0] >= 0xF5 && b[0] <= 0xF6);
+	assert(b[0] >= 0xC0);
 	assert(b[1] == 0);
 
-	if(uws_wynn(uws))
+	if(!uws_wynn(uws))
 		return INVALID_C_STRING;
 
-	if(b[0] == SINGLE_BYTE){
+	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
 		return s->data;
 	}
-	else{
+	else if((b[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)uws;
 		return d->data;
 	}
+
+	return INVALID_C_STRING;
 }
 
 size_t uws_ccat(char* uws_dest, const char* src){
@@ -268,7 +311,7 @@ size_t uws_ccat(char* uws_dest, const char* src){
 	uint8_t* ds = (uint8_t*)uws_dest;
 	size_t src_len = strlen(src);
 
-	if(ds[0] == SINGLE_BYTE){
+	if((ds[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws_dest;
 		if(s->length + src_len >= s->capacity){
 			s->length = s->capacity;
@@ -281,7 +324,7 @@ size_t uws_ccat(char* uws_dest, const char* src){
 
 		return s->length;
 	}
-	else{
+	else if((ds[0] & SIZE_MASK) == DOUBLE_BYTE){
 		__auto_type d = (struct double_str*)uws_dest;
 
 		if(d->length + src_len >= d->capacity){
@@ -295,5 +338,7 @@ size_t uws_ccat(char* uws_dest, const char* src){
 
 		return d->length;
 	}
+	else
+		return 0;
 
 }
