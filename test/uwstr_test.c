@@ -117,9 +117,9 @@ int main(int argc, const char* argv[]){
 
 	const_uwstr8(bromide, "bromide");
 
-	assert(uws_wynn(bromide));
-	assert(uws_cnt(bromide) == 7);
-	assert(uws_len(bromide) == 7);
+	assert(uws_wynn(bromide.uws));
+	assert(uws_cnt(bromide.uws) == 7);
+	assert(uws_len(bromide.uws) == 7);
 
 	return 0;
 }

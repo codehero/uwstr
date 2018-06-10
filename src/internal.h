@@ -33,16 +33,18 @@ struct __internal_uws_double_str {
 	_Static_assert(CAPACITY <= 256, "uwstr8 cannot hold more than 256 bytes")
 
 #define const_uwstr8(VAR, STR) \
-	const struct { \
-		struct __internal_uws_single_str u; \
-		char buffer[sizeof(STR)]; \
-	} __internal_uws_##VAR = { \
-		.u.hdr = '\xC1', \
-		.u.nullterm = '\0', \
-		.u.length = sizeof(STR) - 1, \
-		.u.capacity = sizeof(STR), \
-		.buffer = STR}; \
-	const char* const VAR = (const char*)&__internal_uws_##VAR; \
+	const union { \
+		char uws[sizeof(STR) + 4]; \
+		struct { \
+			struct __internal_uws_single_str u; \
+			char buffer[sizeof(STR)]; \
+		} s;\
+	} VAR = { \
+		.s.u.hdr = '\xC1', \
+		.s.u.nullterm = '\0', \
+		.s.u.length = sizeof(STR) - 1, \
+		.s.u.capacity = sizeof(STR), \
+		.s.buffer = STR}; \
 	_Static_assert(sizeof(STR) <= 256, "uwstr8 cannot hold more than 256 bytes")
 
 
@@ -57,17 +59,23 @@ struct __internal_uws_double_str {
 		.u.length = 0, \
 		.u.capacity = CAPACITY, \
 		}; \
-	char* VAR = (char*)&__internal_uws_##VAR
+	char* VAR = (char*)&__internal_uws_##VAR; \
+	_Static_assert(CAPACITY <= 65536, \
+			"uwstr28 cannot hold more than 65536 bytes")
 
 #define const_uwstr28(VAR, STR) \
-	const struct { \
-		struct __internal_uws_double_str u; \
-		char buffer[sizeof(STR)]; \
-	} __internal_uws_##VAR = { \
+	const union { \
+		char uws[sizeof(STR) + sizeof(__internal_uws_double_str)]; \
+		const struct { \
+			struct __internal_uws_double_str u; \
+			char buffer[sizeof(STR)]; \
+		} s; \
+	}	VAR = { \
 		.u.hdr = '\xE1', \
 		.u.nullterm = '\0', \
 		.u.reserved = 0, \
 		.u.length = sizeof(STR) - 1, \
 		.u.capacity = sizeof(STR), \
 		.buffer = STR}; \
-	const char* const VAR = (const char*)&__internal_uws_##VAR
+	_Static_assert(sizeof(STR) <= 65536,\
+			"uwstr28 cannot hold more than 65536 bytes")
