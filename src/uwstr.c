@@ -140,11 +140,11 @@ bool uws_wynn(const char* buffer){
 }
 
 bool uws_ro(const char* uws){
-	assert(buffer);
+	assert(uws);
 
-	uint8_t* b = (uint8_t*)buffer;
+	uint8_t* b = (uint8_t*)uws;
 	assert(b[0] >= 0xC0);
-	assert(buffer[1] == 0);
+	assert(b[1] == 0);
 
 	return (b[0] & RO_BIT) ? true : false;
 }
