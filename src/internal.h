@@ -20,7 +20,6 @@ struct __internal_uws_double_str {
 };
 
 #define uwstr8(VAR, CAPACITY) \
-	_Static_assert(CAPACITY <= 256, "uwstr8 cannot hold more than 256 bytes");\
 	struct { \
 		struct __internal_uws_single_str u; \
 		char buffer[CAPACITY]; \
@@ -30,10 +29,10 @@ struct __internal_uws_double_str {
 		.u.length = 0, \
 		.u.capacity = CAPACITY, \
 		}; \
-	char* VAR = (char*)&__internal_uws_##VAR
+	char* VAR = (char*)&__internal_uws_##VAR; \
+	_Static_assert(CAPACITY <= 256, "uwstr8 cannot hold more than 256 bytes")
 
 #define const_uwstr8(VAR, STR) \
-	_Static_assert(sizeof(STR) <= 256, "uwstr8 cannot hold more than 256 bytes");\
 	const struct { \
 		struct __internal_uws_single_str u; \
 		char buffer[sizeof(STR)]; \
@@ -43,7 +42,8 @@ struct __internal_uws_double_str {
 		.u.length = sizeof(STR) - 1, \
 		.u.capacity = sizeof(STR), \
 		.buffer = STR}; \
-	const char* VAR = (const char*)&__internal_uws_##VAR
+	const char* const VAR = (const char*)&__internal_uws_##VAR; \
+	_Static_assert(sizeof(STR) <= 256, "uwstr8 cannot hold more than 256 bytes")
 
 
 #define uwstr28(VAR, CAPACITY) \
@@ -70,4 +70,4 @@ struct __internal_uws_double_str {
 		.u.length = sizeof(STR) - 1, \
 		.u.capacity = sizeof(STR), \
 		.buffer = STR}; \
-	const char* VAR = (const char*)&__internal_uws_##VAR
+	const char* const VAR = (const char*)&__internal_uws_##VAR
