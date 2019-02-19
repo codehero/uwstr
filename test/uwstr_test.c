@@ -20,7 +20,7 @@ int main(int argc, const char* argv[]){
 	uws_init(small_buff, small_maxlen);
 	*/
 
-	uwstr8(small_buff, SMALL_LEN);
+	uwstr8(auto, small_buff, SMALL_LEN);
 
 	assert(uws_wynn(small_buff));
 	assert(uws_len(small_buff) == 0);
@@ -34,7 +34,7 @@ int main(int argc, const char* argv[]){
 	uws_init(large_buff, large_maxlen);
 	*/
 
-	uwstr28(large_buff, LARGE_LEN);
+	uwstr28(auto, large_buff, LARGE_LEN);
 
 	assert(uws_wynn(large_buff));
 	assert(uws_len(large_buff) == 0);
@@ -115,11 +115,11 @@ int main(int argc, const char* argv[]){
 	assert(!uws_wynn(small_buff));
 	assert(!uws_wynn(large_buff));
 
-	const_uwstr8(bromide, "bromide");
+	const_uwstr8(auto, bromide, "bromide");
 
-	assert(uws_wynn(bromide.uws));
-	assert(uws_cnt(bromide.uws) == 7);
-	assert(uws_len(bromide.uws) == 7);
+	assert(uws_wynn(bromide));
+	assert(uws_cnt(bromide) == 7);
+	assert(uws_len(bromide) == 7);
 
 	return 0;
 }
