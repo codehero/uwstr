@@ -21,10 +21,36 @@
 
 /* Initialization. */
 
+#ifdef _THIS_IS_JUST_FOR_DEMIOING_MACROS_
 /* There are helper macros for eloquently instantiating uwstr
+ *
+ * Each macro takes one of 2 forms:
+ *
+ * uwstrBU(ATTR, VAR, N)
+ * const_uwstrBU(ATTR, VAR, STR)
+ *
+ * where
+ *
+ *  B is the string length in bytes, epsilon, 2, 4 (epsilon signifies 1 byte)
+ *
+ *  U is the unicode encoding in bits, 8, 16, 32
+ *
+ *  ATTR is one of the following C attributes
+ *   -auto (for local use in a function)
+ *   -static (for static linkage in a file)
+ *   -volatile (sure why not)
+ *   -never const (special handling already done in const_ macro)
+ *
+ *  VAR is name of the variable
+ *
+ *  N is the length for
+ *
+ *  STR is the string literal
+ *
  *
  * Note that if these macros are used outside of function scope,
  * their linkage will be global.
+ *
  *
  * */
 
@@ -34,20 +60,21 @@
  * (including null terminator)
  * The capacity may not exceed 256 bytes
  *
- * // This example instantiates a variable, tmp, with type char*
- * uwstr8(tmp, 128);
  *
  * */
+
+ /* This example instantiates a variable, tmp, with type char* */
+ uwstr8(auto, tmp, 128);
 
 /* const_uwstr8(variable_name, c_string)
  *
  * Instantiates a read only uwstr iwth CONSTANT null terminated string as input
  * The string length may not exceed 256 including null terminator
  *
- * // This example instantiates a variable, PREFIX, with type const char*
- * const_uwstr8(PREFIX, "SomePrefix:");
  *
  * */
+ /* This example instantiates a variable, PREFIX, with type const char* */
+ const_uwstr8(auto, PREFIX, "SomePrefix:");
 
 /* uwstr28(variable_name, capacity)
  *
@@ -55,21 +82,28 @@
  * (including null terminator)
  * The capacity may not exceed 65536 bytes
  *
- * // This example instantiates a variable, tmp, with type char*
- * uwstr28(tmp, 4096);
  *
  * */
+
+ /* This example instantiates a variable, tmp, with type char* */
+ uwstr28(auto, tmp, 4096);
 
 /* const_uwstr28(variable_name, c_string)
  *
  * Instantiates a read only uwstr with CONSTANT null terminated string as input
  * The string length may not exceed 65536 including null terminator
  *
- * // This example instantiates a variable, ERR_RESPONSE, with type const char*
- * const_uwstr28(ERR_RESPONSE, "<html><head>.....</head></html>");
  *
  * */
+ /* This example instantiates a variable, ERR_RESPONSE, with type const char* */
+ const_uwstr28(auto, ERR_RESPONSE, "<html><head>.....</head></html>");
+#endif
 
+
+/** @brief Calculate header size given first byte of header
+ *  @param hdr header byte
+ *  @return 0 if invalid header byte; size otherwise. */
+size_t uws_hdr_size(uint8_t header_byte);
 
 /** @brief Calculate buffer size required to store X number content characters
  *  @param capacity Maximum number of content characters.

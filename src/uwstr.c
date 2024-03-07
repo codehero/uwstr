@@ -38,7 +38,7 @@
 
 /* A continuation byte by itself is invalid in UTF-8.
  * wynnstr also expect both high bits to be set. */
-#define INVALID_C_STRING "\x80"
+#define INVALID_UTF8_STRING "\x80"
 
 #define single_str __internal_uws_single_str
 #define double_str __internal_uws_double_str
@@ -53,6 +53,15 @@ static void uws_invalidate(char* uws){
 		__auto_type d = (struct double_str*)uws;
 		d->length = d->capacity;
 	}
+}
+
+size_t uws_hdr_size(uint8_t header_byte){
+	if(SINGLE_BYTE == header_byte)
+		return sizeof(struct single_str);
+	else if(DOUBLE_BYTE == header_byte)
+		return sizeof(struct double_str);
+	else
+		return 0;
 }
 
 size_t uws_alloc_size(size_t capacity){
@@ -151,14 +160,14 @@ bool uws_ro(const char* uws){
 
 size_t uws_len(const char* uws){
 	if(!uws)
-		return sizeof(INVALID_C_STRING) - 1;
+		return sizeof(INVALID_UTF8_STRING) - 1;
 
 	uint8_t* b = (uint8_t*)uws;
 	assert(b[0] >= 0xC0);
 	assert(b[1] == 0);
 
 	if(!uws_wynn(uws))
-		return sizeof(INVALID_C_STRING) - 1;
+		return sizeof(INVALID_UTF8_STRING) - 1;
 
 	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
@@ -169,7 +178,7 @@ size_t uws_len(const char* uws){
 		return d->length;
 	}
 	else
-		return sizeof(INVALID_C_STRING) - 1;
+		return sizeof(INVALID_UTF8_STRING) - 1;
 }
 
 size_t uws_cnt(const char* uws){
@@ -279,14 +288,14 @@ size_t uws_tok(const char* uws_src, const char** pos, const char* delimiters){
 
 const char* uws_c(const char* uws){
 	if(!uws)
-		return INVALID_C_STRING;
+		return INVALID_UTF8_STRING;
 
 	uint8_t* b = (uint8_t*)uws;
 	assert(b[0] >= 0xC0);
 	assert(b[1] == 0);
 
 	if(!uws_wynn(uws))
-		return INVALID_C_STRING;
+		return INVALID_UTF8_STRING;
 
 	if((b[0] & SIZE_MASK) == SINGLE_BYTE){
 		__auto_type s = (struct single_str*)uws;
@@ -297,7 +306,7 @@ const char* uws_c(const char* uws){
 		return d->data;
 	}
 
-	return INVALID_C_STRING;
+	return INVALID_UTF8_STRING;
 }
 
 size_t uws_ccat(char* uws_dest, const char* src){
