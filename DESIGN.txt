@@ -49,7 +49,7 @@ Possibilities:
 YY -> NULL terminator offset
 ZZ -> capacity
 
-if(YY >= ZZ), then the string is the invalidated string
+if(YY >= ZZ), then the string is a wynnstring
 
 0xF6 0x00 0xYYYY ... 0x0000 0xZZZZ
 
@@ -78,7 +78,7 @@ Level 2:
 The assumptions for UTF-16 and UTF-32 are that you leave the embedded system
 arena for systems with gobs of memory.
 
-Thus no effort is made to really streamline.
+Thus no effort is made to really streamline memory consumption.
 
 
 UTF-16
