@@ -130,7 +130,7 @@ void uws_empty(char* buffer){
 bool uws_wynn(const char* buffer){
 	assert(buffer);
 
-	uint8_t* b = (uint8_t*)buffer;
+	const uint8_t* b = (const uint8_t*)buffer;
 	assert(b[0] >= 0xC0);
 	assert(buffer[1] == 0);
 
@@ -151,7 +151,7 @@ bool uws_wynn(const char* buffer){
 bool uws_ro(const char* uws){
 	assert(uws);
 
-	uint8_t* b = (uint8_t*)uws;
+	const uint8_t* b = (const uint8_t*)uws;
 	assert(b[0] >= 0xC0);
 	assert(b[1] == 0);
 
@@ -162,7 +162,7 @@ size_t uws_len(const char* uws){
 	if(!uws)
 		return sizeof(INVALID_UTF8_STRING) - 1;
 
-	uint8_t* b = (uint8_t*)uws;
+	const uint8_t* b = (const uint8_t*)uws;
 	assert(b[0] >= 0xC0);
 	assert(b[1] == 0);
 
@@ -189,7 +189,7 @@ size_t uws_avail(const char* uws){
 	if(!uws)
 		return 0;
 
-	uint8_t* b = (uint8_t*)uws;
+	const uint8_t* b = (const uint8_t*)uws;
 	assert(b[0] >= 0xC0);
 	assert(uws[1] == 0);
 
